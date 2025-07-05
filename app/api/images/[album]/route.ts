@@ -23,7 +23,7 @@ export async function GET(
   // The second argument is the context object, containing dynamic route parameters.
   // We name it 'ctx' here to be explicit and potentially avoid any cached type issues
   // that might have been associated with the name 'context'.
-  ctx: { params: { album: string } } // This is the precise type signature for context
+  ctx: any // This is the precise type signature for context
 ) {
   // Directly access the album parameter from ctx.params.
   // This approach is robust and should resolve the "params should be awaited" error.
