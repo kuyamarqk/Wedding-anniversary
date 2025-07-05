@@ -20,6 +20,7 @@ const MemoriesSection = () => {
     const fetchAlbums = async () => {
       const res = await fetch('/api/images');
       const data = await res.json();
+      console.log('Fetched albums metadata:', data);
       setAlbumsMeta(data);
     };
     fetchAlbums();
