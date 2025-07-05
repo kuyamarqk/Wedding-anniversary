@@ -4,72 +4,80 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js'; // Correct import for Supabase
 
 // Initialize Supabase client using environment variables
+// These variables must be set in your .env.local file (for local development)
+// and in your Vercel project's Environment Variables (for deployment).
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Basic validation for environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('SERVER ERROR: Supabase URL or Anon Key not set. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local and Vercel environment variables.');
+    console.error('SERVER ERROR: Supabase URL (NEXT_PUBLIC_SUPABASE_URL) or Anon Key (NEXT_PUBLIC_SUPABASE_ANON_KEY) are not set.');
+    console.error('Please ensure these are configured in your .env.local file and Vercel project environment variables.');
 }
 // Ensure createClient is called with non-null/undefined strings
 const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
 
 
 export async function GET(
-  request: NextRequest,
-  context: { params: { album: string } } // This signature is correct for the App Router
+  request: NextRequest, // The first argument is the NextRequest object
+  // The second argument is the context object, containing dynamic route parameters.
+  // We name it 'ctx' here to be explicit and potentially avoid any cached type issues
+  // that might have been associated with the name 'context'.
+  ctx: { params: { album: string } } // This is the precise type signature for context
 ) {
-  // Directly access the album parameter from context.params
-  // This is the most direct and idiomatic way for App Router dynamic segments.
-  const albumName = context.params.album; // This should resolve the 'params should be awaited' error
+  // Directly access the album parameter from ctx.params.
+  // This approach is robust and should resolve the "params should be awaited" error.
+  const albumName = ctx.params.album;
 
   console.log('SERVER: Received album name:', albumName);
 
-  // Robust check for the albumName
+  // Perform robust validation on the extracted albumName
   if (!albumName || typeof albumName !== 'string' || albumName.trim() === '') {
-    console.error('SERVER ERROR: Invalid or empty albumName parameter.', { receivedParams: context.params });
+    console.error('SERVER ERROR: Invalid or empty albumName parameter.', { receivedParams: ctx.params });
     return NextResponse.json({
       error: 'Invalid album name provided in URL.',
       details: 'The album name parameter was missing or not a valid non-empty string.',
-      receivedParams: context.params
+      receivedParams: ctx.params // Include original params for debugging
     }, { status: 400 });
   }
 
   try {
-    // 1. Get the album_id from the 'albums' table using the album name
+    // 1. Fetch the album's ID from the 'albums' table using the album name
     const { data: albumData, error: albumError } = await supabase
       .from('albums')
       .select('id')
       .eq('name', albumName)
-      .single();
+      .single(); // Use .single() as album name is unique
 
     if (albumError) {
       console.error(`SERVER ERROR: Supabase fetch error for album "${albumName}":`, albumError);
-      if (albumError.code === 'PGRST116') { // Supabase error code for "no rows found"
+      // Supabase specific error code for "no rows found" (album not in DB)
+      if (albumError.code === 'PGRST116') {
           return NextResponse.json({ error: `Album "${albumName}" not found.` }, { status: 404 });
       }
       return NextResponse.json({ error: 'Failed to fetch album data from Supabase', details: albumError.message }, { status: 500 });
     }
 
     if (!albumData) {
-        console.warn(`SERVER: Album "${albumName}" not found in Supabase (no data returned after query).`);
+        console.warn(`SERVER: Album "${albumName}" not found in Supabase (no data returned after initial query).`);
         return NextResponse.json({ error: `Album "${albumName}" not found` }, { status: 404 });
     }
 
-    const albumId = albumData.id;
+    const albumId = albumData.id; // Extract the UUID of the album
 
-    // 2. Fetch all image URLs associated with that album_id
+    // 2. Fetch all image URLs associated with that album_id from the 'images' table
     const { data: images, error: imagesError } = await supabase
       .from('images')
-      .select('url')
-      .eq('album_id', albumId)
-      .order('order', { ascending: true }); // Order by 'order' column if you use it
+      .select('url') // We only need the URL of each image
+      .eq('album_id', albumId) // Filter images by the album's ID
+      .order('order', { ascending: true }); // Order images based on the 'order' column
 
     if (imagesError) {
       console.error(`SERVER ERROR: Supabase fetch error for images in album "${albumName}":`, imagesError);
       return NextResponse.json({ error: `Failed to fetch images for album "${albumName}"`, details: imagesError.message }, { status: 500 });
     }
 
+    // Extract just the URLs into an array
     const imageUrls = images ? images.map(img => img.url) : [];
 
     console.log(`SERVER: Successfully fetched ${imageUrls.length} images for album "${albumName}" from Supabase.`);
