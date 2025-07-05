@@ -1,16 +1,8 @@
 {
-  "Bond": {
-    "preview":  "/images/bond/bond1.jpg",
+  "bond": {
+    "preview": "/images/bond/bond1.jpg",
     "images": [
       "/images/bond/bond1.jpg",
-      "/images/bond/bond2.jpg",
-      "/images/bond/bond3.jpg",
-      "/images/bond/bond4.jpg",
-      "/images/bond/bond5.jpg",
-      "/images/bond/bond6.jpg",
-      "/images/bond/bond7.jpg",
-      "/images/bond/bond8.jpg",
-      "/images/bond/bond8.jpg",
       "/images/bond/bond10.jpg",
       "/images/bond/bond11.jpg",
       "/images/bond/bond12.jpg",
@@ -21,24 +13,83 @@
       "/images/bond/bond17.jpg",
       "/images/bond/bond18.jpg",
       "/images/bond/bond19.jpg",
+      "/images/bond/bond2.jpg",
       "/images/bond/bond20.jpg",
       "/images/bond/bond21.jpg",
       "/images/bond/bond22.jpg",
       "/images/bond/bond23.jpg",
-      "/images/bond/bond24.jpg"
-
+      "/images/bond/bond24.jpg",
+      "/images/bond/bond25.jpg",
+      "/images/bond/bond26.jpg",
+      "/images/bond/bond27.jpg",
+      "/images/bond/bond28.jpg",
+      "/images/bond/bond29.jpg",
+      "/images/bond/bond3.jpg",
+      "/images/bond/bond30.jpg",
+      "/images/bond/bond31.jpg",
+      "/images/bond/bond32.jpg",
+      "/images/bond/bond33.jpg",
+      "/images/bond/bond34.jpg",
+      "/images/bond/bond35.jpg",
+      "/images/bond/bond36.jpg",
+      "/images/bond/bond37.jpg",
+      "/images/bond/bond38.jpg",
+      "/images/bond/bond39.jpg",
+      "/images/bond/bond4.jpg",
+      "/images/bond/bond40.jpg",
+      "/images/bond/bond41.jpg",
+      "/images/bond/bond42.jpg",
+      "/images/bond/bond43.jpg",
+      "/images/bond/bond44.jpg",
+      "/images/bond/bond45.jpg",
+      "/images/bond/bond46.jpg",
+      "/images/bond/bond47.jpg",
+      "/images/bond/bond48.jpg",
+      "/images/bond/bond49.JPG",
+      "/images/bond/bond5.jpg",
+      "/images/bond/bond50.JPG",
+      "/images/bond/bond51.JPG",
+      "/images/bond/bond52.JPG",
+      "/images/bond/bond53.JPG",
+      "/images/bond/bond54.JPG",
+      "/images/bond/bond55.JPG",
+      "/images/bond/bond56.JPG",
+      "/images/bond/bond57.JPG",
+      "/images/bond/bond58.JPG",
+      "/images/bond/bond59.jpg",
+      "/images/bond/bond6.jpg",
+      "/images/bond/bond60.jpg",
+      "/images/bond/bond7.jpg",
+      "/images/bond/bond8.jpg",
+      "/images/bond/bond9.jpg"
+    ]
+  },
+  "latest": {
+    "preview": "/images/latest/latest1.jpeg",
+    "images": [
+      "/images/latest/latest1.jpeg",
+      "/images/latest/latest2.jpg",
+      "/images/latest/latest3.jpeg",
+      "/images/latest/latest4.jpeg",
+      "/images/latest/latest5.jpeg",
+      "/images/latest/latest6.jpeg",
+      "/images/latest/latest7.jpg",
+      "/images/latest/latest8.jpg"
     ]
   },
   "travel": {
     "preview": "/images/travel/travel1.jpg",
     "images": [
-      
-    ]
-  },
-  "latest": {
-    "preview": "/images/latest/latest1.jpg",
-    "images": [
-      
+      "/images/travel/travel1.jpg",
+      "/images/travel/travel10.jpg",
+      "/images/travel/travel2.jpg",
+      "/images/travel/travel3.jpg",
+      "/images/travel/travel4.jpg",
+      "/images/travel/travel5.jpg",
+      "/images/travel/travel6.jpg",
+      "/images/travel/travel7.jpg",
+      "/images/travel/travel8.jpg",
+      "/images/travel/travel9.jpg"
     ]
   }
 }
