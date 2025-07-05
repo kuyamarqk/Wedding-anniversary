@@ -1,32 +1,43 @@
+// app/api/images/[album]/route.ts
+
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
 
 // Base directory for your albums inside public
-const IMAGES_BASE_DIR = 'public/images'; 
+const IMAGES_PUBLIC_PATH = 'public/images'; // Relative to process.cwd()
 
-export async function GET(request: Request, { params }: { params: { albumName: string } }) {
-  // --- CRUCIAL DEBUGGING & VALIDATION ---
-  // Log what params is receiving to Vercel logs
-  console.log('SERVER: Received params for [albumName] route:', params); 
+export async function GET(
+  request: Request,
+  context: { params: { album: string } } // Make sure your folder is `[album]`
+) {
+  // --- CRITICAL FIX FOR "params should be awaited" ---
+  const rawParams = context.params;
 
-  // Explicitly check if albumName is present and is a string
-  const albumName = params.albumName; // Access directly
+  console.log('SERVER: Received raw params for [album] route:', rawParams);
 
-  if (typeof albumName !== 'string' || !albumName.trim()) {
-    console.error('SERVER ERROR: Invalid or missing albumName parameter.', { params, albumName });
+  const albumNameFromParams = (rawParams && typeof rawParams.album === 'string')
+    ? rawParams.album
+    : '';
+
+  if (!albumNameFromParams.trim()) {
+    console.error('SERVER ERROR: Invalid or empty albumName parameter after extraction.', {
+      originalParams: rawParams,
+      extractedAlbumName: albumNameFromParams
+    });
     return NextResponse.json({
       error: 'Invalid album name provided in URL.',
-      details: 'The albumName parameter was missing or not a valid string.',
-      receivedParams: params // Include params in the error for debugging
-    }, { status: 400 }); // Use 400 Bad Request for client-side parameter issues
+      details: 'The album name parameter was missing or not a valid non-empty string. (Server-side)',
+      receivedParams: rawParams
+    }, { status: 400 });
   }
-  // --- END CRUCIAL DEBUGGING & VALIDATION ---
 
+  const albumName = albumNameFromParams;
+  // --- END CRITICAL FIX & VALIDATION ---
 
   try {
-    const albumFullPath = path.join(process.cwd(), IMAGES_BASE_DIR, albumName);
-    console.log('SERVER: Attempting to read album directory:', albumFullPath); // Log for debugging
+    const albumFullPath = path.join(process.cwd(), IMAGES_PUBLIC_PATH, albumName);
+    console.log('SERVER: Attempting to read album directory:', albumFullPath);
 
     // Check if the album directory exists
     try {
@@ -40,21 +51,19 @@ export async function GET(request: Request, { params }: { params: { albumName: s
     }
 
     // Read files within the specific album directory
-    const albumFiles = await fs.readdir(albumFullPath, { withFileTypes: true });
+    const imageDirents = await fs.readdir(albumFullPath, { withFileTypes: true });
 
     const imageUrls: string[] = [];
-    // Ensure this path mapping is correct: it should be relative to the public root
-    // For `public/images/albumName`, the public URL is `/images/albumName`
-    const publicAlbumPath = `/${IMAGES_BASE_DIR.replace('public/', '')}/${albumName}`;
+    const publicAlbumUrl = `/${IMAGES_PUBLIC_PATH.replace('public/', '')}/${albumName}`;
 
-    for (const dirent of albumFiles) {
+    for (const dirent of imageDirents) {
       if (dirent.isFile()) {
         const fileName = dirent.name;
         const fileExtension = path.extname(fileName).toLowerCase();
 
         // Filter for common image types
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExtension)) {
-          imageUrls.push(`${publicAlbumPath}/${fileName}`);
+          imageUrls.push(`${publicAlbumUrl}/${fileName}`);
         }
       }
     }
@@ -65,9 +74,9 @@ export async function GET(request: Request, { params }: { params: { albumName: s
   } catch (error) {
     console.error(`SERVER ERROR: Failed to process request for album "${albumName}":`, error);
     if ((error as any).code === 'ENOENT') {
-         console.error(`SERVER ERROR: ENOENT - Album directory not found at ${path.join(process.cwd(), IMAGES_BASE_DIR, albumName)}. ` +
+         console.error(`SERVER ERROR: ENOENT - Album directory not found at ${path.join(process.cwd(), IMAGES_PUBLIC_PATH, albumName)}. ` +
                        `This likely means the files are not bundled with the serverless function on Vercel. ` +
-                       `Check 'next.config.js' outputFileTracingIncludes.`);
+                       `Double-check 'next.config.js' outputFileTracingIncludes.`);
      }
     return NextResponse.json({
       error: `Failed to fetch images for album ${albumName} on server.`,

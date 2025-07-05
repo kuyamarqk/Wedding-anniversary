@@ -1,0 +1,44 @@
+{
+  "Bond": {
+    "preview":  "/images/bond/bond1.jpg",
+    "images": [
+      "/images/bond/bond1.jpg",
+      "/images/bond/bond2.jpg",
+      "/images/bond/bond3.jpg",
+      "/images/bond/bond4.jpg",
+      "/images/bond/bond5.jpg",
+      "/images/bond/bond6.jpg",
+      "/images/bond/bond7.jpg",
+      "/images/bond/bond8.jpg",
+      "/images/bond/bond8.jpg",
+      "/images/bond/bond10.jpg",
+      "/images/bond/bond11.jpg",
+      "/images/bond/bond12.jpg",
+      "/images/bond/bond13.jpg",
+      "/images/bond/bond14.jpg",
+      "/images/bond/bond15.jpg",
+      "/images/bond/bond16.jpg",
+      "/images/bond/bond17.jpg",
+      "/images/bond/bond18.jpg",
+      "/images/bond/bond19.jpg",
+      "/images/bond/bond20.jpg",
+      "/images/bond/bond21.jpg",
+      "/images/bond/bond22.jpg",
+      "/images/bond/bond23.jpg",
+      "/images/bond/bond24.jpg"
+
+    ]
+  },
+  "travel": {
+    "preview": "/images/travel/travel1.jpg",
+    "images": [
+      
+    ]
+  },
+  "latest": {
+    "preview": "/images/latest/latest1.jpg",
+    "images": [
+      
+    ]
+  }
+}
