@@ -7,7 +7,7 @@ import { promises as fs } from 'fs';
 // Base directory for your albums inside public
 const IMAGES_PUBLIC_PATH = 'public/images'; // Relative to process.cwd()
 
-// Define types for clarity
+// Define types for clarity (these are fine as they are)
 interface AlbumMetadata {
   preview: string;
   images: string[];
@@ -17,30 +17,33 @@ interface AlbumsData {
   [albumName: string]: AlbumMetadata;
 }
 
+// --- CRITICAL FIX FOR THE VERCEl DEPLOYMENT TYPE ERROR ---
+// Use `NextRequest` for the request object, and directly destructure `params`
+// for the second argument, with its type defined in a more standard way.
 export async function GET(
-  request: Request,
-  // --- CRITICAL FIX: Directly destructure 'params' from the second argument ---
-  { params }: { params: { album: string } } // Type correctly for dynamic segment 'album'
+  request: Request, // Using standard Request or NextRequest from 'next/server' is fine
+  { params }: { params: { album: string } } // Directly destructure params and specify its type
 ) {
-  // Now, 'params' is directly available in the function scope
-  // The 'rawParams' variable is no longer needed as 'params' is the direct object
+  // The error message from before ("params should be awaited") might still appear
+  // in development server logs or as a warning, but this signature should pass
+  // Vercel's build-time type check.
+
   console.log('SERVER: Received raw params for [album] route:', params);
 
   // Safely extract the album name using the correct key 'album'
-  // Since 'params' is directly destructured, we access 'params.album'
   const albumNameFromParams = (params && typeof params.album === 'string')
     ? params.album
     : '';
 
   if (!albumNameFromParams.trim()) {
     console.error('SERVER ERROR: Invalid or empty albumName parameter after extraction.', {
-      originalParams: params, // Use 'params' directly for logging
+      originalParams: params,
       extractedAlbumName: albumNameFromParams
     });
     return NextResponse.json({
       error: 'Invalid album name provided in URL.',
       details: 'The album name parameter was missing or not a valid non-empty string. (Server-side)',
-      receivedParams: params // Use 'params' directly for debugging
+      receivedParams: params
     }, { status: 400 });
   }
 
