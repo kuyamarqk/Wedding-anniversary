@@ -32,7 +32,8 @@ const MemoriesSection = () => {
     if (!albums[album]) {
       const res = await fetch(`/api/images/${album}`);
       const data = await res.json();
-      setAlbums((prev) => ({ ...prev, [album]: data }));
+      // FIX: Only store the images array, not the whole object
+      setAlbums((prev) => ({ ...prev, [album]: data.images || [] }));
     }
   };
 
@@ -75,7 +76,7 @@ const MemoriesSection = () => {
       </div>
 
       {/* Modal Viewer */}
-      {selectedAlbum && albums[selectedAlbum] && (
+      {selectedAlbum && Array.isArray(albums[selectedAlbum]) && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-start p-6 overflow-y-auto">
           <button
             onClick={() => setSelectedAlbum(null)}

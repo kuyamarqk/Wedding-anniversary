@@ -8,7 +8,8 @@ export default function Home() {
   return (
     <>
       <section id="hero"><HeroSection/></section>
-      <section id="story"><StorySection />
+      <section id="story">
+        <StorySection />
         <MemoriesSection />
       </section>
       <section id="messages" className="py-20 px-6 bg-black/40">

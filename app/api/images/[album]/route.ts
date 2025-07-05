@@ -2,8 +2,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { album: string } }) {
-  const album = params.album;
+export const runtime = 'nodejs';
+
+export async function GET(request: Request, context: { params: { album: string } }) {
+  const { params } = context;
+  const albumParam = await params; // Await params
+  const album = albumParam.album;
+
   const folder = path.join(process.cwd(), 'public', 'images', album);
 
   try {
