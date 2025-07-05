@@ -1,13 +1,11 @@
 import Link from 'next/link';
 
-type AlbumPageProps = {
-  params: {
-    album: string;
-  };
-};
+    type AlbumPageProps = {
+      params: Promise<{ album: string }>;
+    };
 
 export default async function AlbumPage({ params }: AlbumPageProps) {
-  const album = params.album;
+  const album = (await params).album;
   let images: string[] = [];
 
   try {
