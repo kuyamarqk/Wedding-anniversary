@@ -1,10 +1,9 @@
-// app/api/images/[album]/route.ts
+// app/api/images/[album]/route.ts - Make sure it looks like this (after applying Part 2 fix)!
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server'; // Need type NextRequest
 import path from 'path';
 import { promises as fs } from 'fs';
 
-// Define TypeScript interfaces (consistent with route.ts)
 interface AlbumMetadata {
   preview: string;
   images: string[];
@@ -14,16 +13,11 @@ interface AlbumsData {
   [albumName: string]: AlbumMetadata;
 }
 
-// FIX START: Correct GET function signature for Next.js App Router
 export async function GET(
-  request: Request,
-  // The correct type for params in App Router is often directly as a destructured object:
-  { params }: { params: { album: string } }
-  // OR sometimes it's expected as `context: { params: { album: string } }`
-  // The current error implies `params: { album: string }` directly as the second arg is the issue.
-  // Let's try the common and officially recommended way.
+  request: NextRequest, // FIRST ARGUMENT
+  context: { params: { album: string } } // SECOND ARGUMENT, containing params
 ) {
-// FIX END: Correct GET function signature
+  const { params } = context; // Destructure params from context
 
   console.log('SERVER: Received raw params for [album] route:', params);
 
