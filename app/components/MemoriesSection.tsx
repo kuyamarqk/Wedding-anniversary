@@ -1,6 +1,7 @@
 'use client'; // This directive is necessary for client-side components in Next.js App Router
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image'; // Importing Image component for optimized image loading
 
 // Define TypeScript types for better code clarity and safety
 type AlbumPreview = {
@@ -142,13 +143,15 @@ const MemoriesSection = () => {
                 // Tailwind CSS classes for individual image cards in the modal
                 className="rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
               >
-                <img
-                  src={src} // Image source URL
-                  alt={`Memory ${i + 1}`}
-                  // Tailwind CSS classes for image styling
-                  className="w-full h-full max-h-[400px] object-cover object-center rounded-lg transition-transform duration-300 group-hover:scale-125"
-                  loading="lazy" // Optimize image loading
-                />
+                <Image
+  src={src} // Image source URL
+  alt={`Memory ${i + 1}`}
+  // Tailwind CSS classes for image styling
+  className="w-full h-full max-h-[400px] object-cover object-center rounded-lg transition-transform duration-300 group-hover:scale-125"
+  loading="lazy" // Optimize image loading
+  width={500} // **REQUIRED: Specify the width of the image**
+  height={300} // **REQUIRED: Specify the height of the image**
+/>
               </div>
             ))}
           </div>
