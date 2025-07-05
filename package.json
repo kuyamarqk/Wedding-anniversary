@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-albums": "node generate-albums-json.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",

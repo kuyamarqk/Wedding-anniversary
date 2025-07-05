@@ -1,82 +1,61 @@
 // app/api/images/route.ts
+
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
 
-// Base directory for your albums inside public
-const IMAGES_BASE_DIR = 'public/images'; // This is relative to process.cwd()
+// Define types for clarity
+interface AlbumMetadata {
+  preview: string;
+  images: string[];
+}
+
+interface AlbumsData {
+  [albumName: string]: AlbumMetadata;
+}
 
 export async function GET(request: Request) {
   try {
-    const fullPath = path.join(process.cwd(), IMAGES_BASE_DIR);
-    console.log('Attempting to read directory:', fullPath); // Log for debugging
+    // Construct the path to your albums.json file (relative to process.cwd())
+    // This assumes 'data/albums.json' is at your project root.
+    const filePath = path.join(process.cwd(), 'data', 'albums.json');
+    console.log('SERVER: Attempting to read JSON file from:', filePath);
 
-    // Read all items (folders) in the base directory
-    const albumFolders = await fs.readdir(fullPath, { withFileTypes: true });
+    // Read the JSON file
+    const fileContents = await fs.readFile(filePath, 'utf8');
+    const allAlbums: AlbumsData = JSON.parse(fileContents);
 
-    const albumsData: Record<string, { preview: string; count: number }> = {};
-
-    for (const dirent of albumFolders) {
-      // Only process directories (which are your albums)
-      if (dirent.isDirectory()) {
-        const albumName = dirent.name;
-        const albumFullPath = path.join(fullPath, albumName);
-        const publicAlbumPath = `/${IMAGES_BASE_DIR.replace('public/', '')}/${albumName}`; // Public URL path
-
-        // Read files within the album directory
-        const albumFiles = await fs.readdir(albumFullPath, { withFileTypes: true });
-
-        let imageCount = 0;
-        let previewImage = '';
-
-        for (const fileDirent of albumFiles) {
-          if (fileDirent.isFile()) {
-            const fileName = fileDirent.name;
-            const fileExtension = path.extname(fileName).toLowerCase();
-
-            // Only count common image types
-            if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExtension)) {
-              imageCount++;
-              // Set a common preview image name or just the first one found
-              if (fileName.includes('preview') || previewImage === '') {
-                previewImage = `${publicAlbumPath}/${fileName}`;
-              }
-            }
-          }
-        }
-
-        // Fallback preview if no images found or specific preview not set
-        if (!previewImage && imageCount > 0) {
-             // Use the first image found if no specific 'preview' image exists
-            const firstImage = albumFiles.find(f => f.isFile() && ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(path.extname(f.name).toLowerCase()));
-            if (firstImage) {
-                previewImage = `${publicAlbumPath}/${firstImage.name}`;
-            }
-        } else if (!previewImage && imageCount === 0) {
-            previewImage = '/images/placeholder.jpg'; // Path to your default placeholder in public/images
-        }
-
-        albumsData[albumName] = {
-          preview: previewImage,
-          count: imageCount,
+    // Prepare the metadata needed by the client for the album list
+    const albumsMeta: Record<string, { preview: string; count: number }> = {};
+    for (const albumName in allAlbums) {
+      // Ensure it's an own property to avoid iterating prototype chain
+      if (Object.prototype.hasOwnProperty.call(allAlbums, albumName)) {
+        const album = allAlbums[albumName];
+        albumsMeta[albumName] = {
+          preview: album.preview,
+          count: album.images.length,
         };
       }
     }
 
-    console.log('Dynamically fetched albums metadata:', albumsData);
-    return NextResponse.json(albumsData, { status: 200 });
+    console.log('SERVER: Successfully fetched albums metadata from JSON.');
+    return NextResponse.json(albumsMeta, { status: 200 });
 
   } catch (error) {
-    console.error('Error dynamically fetching albums metadata:', error);
-    // Log more details if it's an ENOENT error
-    if ((error as any).code === 'ENOENT') {
-      console.error(`ENOENT error: Directory not found at ${path.join(process.cwd(), IMAGES_BASE_DIR)}. ` +
-                    `This usually means the files are not bundled with the serverless function on Vercel. ` +
-                    `Check 'next.config.js' outputFileTracingIncludes.`);
+    console.error('SERVER ERROR: Error fetching albums metadata from JSON:', error);
+    if (error instanceof Error) {
+        if ((error as any).code === 'ENOENT') {
+            // This error means data/albums.json was not found by the serverless function
+            return NextResponse.json({
+                error: 'Album data file (data/albums.json) not found on server.',
+                details: `Ensure 'data/albums.json' exists at project root and is bundled. Error: ${error.message}`
+            }, { status: 500 });
+        }
+        return NextResponse.json({
+            error: 'Failed to fetch album metadata from JSON.',
+            details: error.message
+        }, { status: 500 });
     }
-    return NextResponse.json({
-      error: 'Failed to dynamically fetch album metadata',
-      details: (error as Error).message,
-    }, { status: 500 });
+    return NextResponse.json({ error: 'An unknown server error occurred while fetching albums.' }, { status: 500 });
   }
 }
