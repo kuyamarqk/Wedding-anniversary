@@ -7,33 +7,44 @@ import { promises as fs } from 'fs';
 // Base directory for your albums inside public
 const IMAGES_PUBLIC_PATH = 'public/images'; // Relative to process.cwd()
 
+// Define types for clarity
+interface AlbumMetadata {
+  preview: string;
+  images: string[];
+}
+
+interface AlbumsData {
+  [albumName: string]: AlbumMetadata;
+}
+
 export async function GET(
   request: Request,
-  context: { params: { album: string } } // Make sure your folder is `[album]`
+  // --- CRITICAL FIX: Directly destructure 'params' from the second argument ---
+  { params }: { params: { album: string } } // Type correctly for dynamic segment 'album'
 ) {
-  // --- CRITICAL FIX FOR "params should be awaited" ---
-  const rawParams = context.params;
+  // Now, 'params' is directly available in the function scope
+  // The 'rawParams' variable is no longer needed as 'params' is the direct object
+  console.log('SERVER: Received raw params for [album] route:', params);
 
-  console.log('SERVER: Received raw params for [album] route:', rawParams);
-
-  const albumNameFromParams = (rawParams && typeof rawParams.album === 'string')
-    ? rawParams.album
+  // Safely extract the album name using the correct key 'album'
+  // Since 'params' is directly destructured, we access 'params.album'
+  const albumNameFromParams = (params && typeof params.album === 'string')
+    ? params.album
     : '';
 
   if (!albumNameFromParams.trim()) {
     console.error('SERVER ERROR: Invalid or empty albumName parameter after extraction.', {
-      originalParams: rawParams,
+      originalParams: params, // Use 'params' directly for logging
       extractedAlbumName: albumNameFromParams
     });
     return NextResponse.json({
       error: 'Invalid album name provided in URL.',
       details: 'The album name parameter was missing or not a valid non-empty string. (Server-side)',
-      receivedParams: rawParams
+      receivedParams: params // Use 'params' directly for debugging
     }, { status: 400 });
   }
 
   const albumName = albumNameFromParams;
-  // --- END CRITICAL FIX & VALIDATION ---
 
   try {
     const albumFullPath = path.join(process.cwd(), IMAGES_PUBLIC_PATH, albumName);
