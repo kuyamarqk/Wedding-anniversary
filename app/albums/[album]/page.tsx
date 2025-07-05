@@ -1,4 +1,3 @@
-// app/albums/[album]/page.tsx
 import fs from 'fs/promises';
 import path from 'path';
 import Link from 'next/link';
@@ -19,6 +18,7 @@ export default async function AlbumPage({ params }: AlbumPageProps) {
       .filter((file) => /\.(jpe?g|png|webp|gif|jfif)$/i.test(file))
       .map((file) => `/images/${album}/${file}`);
   } catch (err) {
+    // If the folder doesn't exist or can't be read, show not found message
     return (
       <div className="p-10 text-red-500 text-xl font-semibold">
         Album not found.
@@ -39,15 +39,21 @@ export default async function AlbumPage({ params }: AlbumPageProps) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {images.map((src, i) => (
-            <div key={i} className="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
-              <img
-                src={src}
-                alt={`${album} image ${i}`}
-                className="w-full h-full max-h-[400px] object-cover object-center transition-transform duration-300 hover:scale-105"
-              />
+          {images.length === 0 ? (
+            <div className="col-span-full text-center text-white/80 text-lg">
+              No images found in this album.
             </div>
-          ))}
+          ) : (
+            images.map((src, i) => (
+              <div key={i} className="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
+                <img
+                  src={src}
+                  alt={`${album} image ${i}`}
+                  className="w-full h-full max-h-[400px] object-cover object-center transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
