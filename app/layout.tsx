@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en">npm
         <body className="min-h-screen scroll-smooth font-[Playfair Display] text-gray-900 relative">
           <NavBar />
         <div className="fixed inset-0 z-0 bg-[url('/images/background.jpeg')] bg-cover bg-center bg-no-repeat brightness-75" />
