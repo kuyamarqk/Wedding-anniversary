@@ -2,7 +2,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import Link from 'next/link';
 
-interface AlbumPageProps {
+interface PageProps {
+  params: { [key: string]: string };
+}
+
+interface AlbumPageProps extends PageProps {
   params: { album: string };
 }
 
