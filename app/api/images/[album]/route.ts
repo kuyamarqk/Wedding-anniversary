@@ -4,11 +4,11 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: Request, context: { params: { album: string } }) {
-  const { params } = context;
-  const albumParam = await params; // Await params
-  const album = albumParam.album;
-
+export async function GET(
+  request: Request,
+  context: { params: { album: string } }
+) {
+  const album = context.params.album;
   const folder = path.join(process.cwd(), 'public', 'images', album);
 
   try {
