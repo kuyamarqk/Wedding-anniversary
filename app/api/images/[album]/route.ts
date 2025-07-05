@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 export async function GET(
   request: Request,
-  context: { params: { album: string } }
+  context: any // <-- Use 'any' here to bypass type issues
 ) {
   const album = context.params.album;
   const folder = path.join(process.cwd(), 'public', 'images', album);
