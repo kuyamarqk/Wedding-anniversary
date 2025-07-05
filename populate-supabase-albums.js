@@ -9,7 +9,6 @@ require('dotenv').config({ path: '.env.local' });
 const PUBLIC_IMAGES_DIR = path.join(__dirname, 'public', 'images');
 
 // Initialize Supabase client using environment variables
-// Ensure these variables are set in your .env.local file in the project root
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -24,7 +23,6 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Function to check if a file extension is an image
 const isImageFile = (fileName) => {
   const ext = path.extname(fileName).toLowerCase();
-  // Add more image extensions if you have them
   return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'].includes(ext);
 };
 
@@ -33,78 +31,71 @@ async function populateSupabaseAlbums() {
   console.log('Reading image folders from:', PUBLIC_IMAGES_DIR);
 
   try {
-    // Read contents of the public/images directory
     const albumFolders = await fs.readdir(PUBLIC_IMAGES_DIR, { withFileTypes: true });
 
     for (const dirent of albumFolders) {
-      // Process only directories (which represent albums)
       if (dirent.isDirectory()) {
-        const albumName = dirent.name; // The folder name is the album name
+        const albumName = dirent.name;
         const albumPath = path.join(PUBLIC_IMAGES_DIR, albumName);
-        const publicAlbumUrlBase = `/images/${albumName}`; // Public URL base for this specific album
+        // CRITICAL: Ensure public URL base is correctly formed
+        // This is the public facing path, not the local file system path
+        const publicAlbumUrlBase = `/images/${albumName}`;
 
         console.log(`\n--- Processing album folder: ${albumName} ---`);
 
         const filesInAlbum = await fs.readdir(albumPath, { withFileTypes: true });
 
         const imagesToInsert = [];
-        let previewImageUrl = ''; // Will store the public URL of the preview image for this album
+        let previewImageUrl = '';
 
         for (const fileDirent of filesInAlbum) {
           if (fileDirent.isFile() && isImageFile(fileDirent.name)) {
+            // CRITICAL: Ensure image URL includes the publicAlbumUrlBase
             const imageUrl = `${publicAlbumUrlBase}/${fileDirent.name}`;
             imagesToInsert.push(imageUrl);
 
-            // Heuristic for preview image:
-            // 1. Look for 'preview' in filename (case-insensitive)
-            // 2. Otherwise, take the first image found
+            // Heuristic for preview image
             if (fileDirent.name.toLowerCase().includes('preview') && !previewImageUrl) {
                 previewImageUrl = imageUrl;
             }
           }
         }
 
-        // Fallback: If no specific 'preview' image found in the folder, use the first image in the list
+        // Fallback: If no specific 'preview' image found, use the first image.
         if (!previewImageUrl && imagesToInsert.length > 0) {
             previewImageUrl = imagesToInsert[0];
         } else if (imagesToInsert.length === 0) {
-            // If no images found in the album folder, use a generic placeholder
-            // Make sure you have this file in public/images/
+            // If no images found, use a generic placeholder (ensure this exists in public/images/)
             previewImageUrl = '/images/placeholder.jpg';
             console.warn(`WARNING: Album "${albumName}" contains no images. Using placeholder for preview.`);
         }
 
-        // Sort images alphabetically for consistent order in the database
         imagesToInsert.sort();
 
         // --- Supabase Operations ---
 
         let albumId;
 
-        // 1. Check if album already exists in 'albums' table
         const { data: existingAlbum, error: fetchAlbumError } = await supabase
           .from('albums')
           .select('id')
           .eq('name', albumName)
-          .single(); // Use .single() as name is UNIQUE
+          .single();
 
-        if (fetchAlbumError && fetchAlbumError.code !== 'PGRST116') { // PGRST116 means "No rows found"
+        if (fetchAlbumError && fetchAlbumError.code !== 'PGRST116') {
           console.error(`Error checking for existing album ${albumName}:`, fetchAlbumError);
-          continue; // Skip to next album if unable to check existence
+          continue;
         }
 
         if (existingAlbum) {
           albumId = existingAlbum.id;
-          // Album exists, update its preview_url (if needed)
           const { error: updateAlbumError } = await supabase
             .from('albums')
             .update({ preview_url: previewImageUrl })
-            .eq('id', albumId); // Update by ID
+            .eq('id', albumId);
           if (updateAlbumError) console.error(`Error updating album ${albumName}:`, updateAlbumError);
           else console.log(`Updated existing album: ${albumName} (ID: ${albumId})`);
 
-          // Delete all old images associated with this album before re-inserting
-          // This ensures no stale image entries remain if images were removed from folder
           const { error: deleteImagesError } = await supabase
             .from('images')
             .delete()
@@ -113,27 +104,25 @@ async function populateSupabaseAlbums() {
           else console.log(`Deleted old images for album: ${albumName}`);
 
         } else {
-          // Album does not exist, insert new album
           const { data: newAlbum, error: insertAlbumError } = await supabase
             .from('albums')
             .insert({ name: albumName, preview_url: previewImageUrl })
-            .select('id') // Select the generated ID
-            .single(); // Expect a single row back
+            .select('id')
+            .single();
 
           if (insertAlbumError) {
             console.error(`Error inserting new album ${albumName}:`, insertAlbumError);
-            continue; // Skip to next album if insertion fails
+            continue;
           }
           albumId = newAlbum.id;
           console.log(`Inserted new album: ${albumName} (ID: ${albumId})`);
         }
 
-        // 2. Insert Images into 'images' table, linked to the album_id
         if (albumId && imagesToInsert.length > 0) {
           const imagesData = imagesToInsert.map((url, index) => ({
             album_id: albumId,
             url: url,
-            order: index, // Use index for 'order' column to maintain sorting
+            order: index,
           }));
 
           const { error: insertImagesError } = await supabase
@@ -156,9 +145,8 @@ async function populateSupabaseAlbums() {
     } else {
       console.error('An unexpected error occurred during Supabase album population:', error);
     }
-    process.exit(1); // Exit with an error code if an error occurs
+    process.exit(1);
   }
 }
 
-// Run the function
 populateSupabaseAlbums();
