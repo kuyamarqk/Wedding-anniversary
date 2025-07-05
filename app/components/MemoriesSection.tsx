@@ -89,6 +89,7 @@ const MemoriesSection = () => {
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {/* Map over the albumsMeta to display each album as a clickable card */}
           {Object.entries(albumsMeta).map(([album, meta]) => (
+            console.log('CLIENT: Rendering album card for', album, 'with meta:', meta), // Debug log for each album card
             <div
               key={album} // Unique key for React list rendering
               onClick={() => openAlbum(album)} // Call openAlbum function on click
@@ -96,13 +97,15 @@ const MemoriesSection = () => {
               className="cursor-pointer group overflow-hidden rounded-xl shadow-lg relative"
             >
               {/* Album preview image */}
-              <img
+              <Image
                 // Use the preview image URL from meta, or a placeholder if not available
                 src={meta.preview || '/images/placeholder.jpg'}
                 alt={`${album} preview`}
                 // Tailwind CSS classes for image styling
                 className="h-64 w-full object-cover transform group-hover:scale-110 transition duration-500"
                 loading="lazy" // Optimize image loading
+                width={500} // **REQUIRED: Specify the width of the image**
+                  height={300} // **REQUIRED: Specify the height of the image**
               />
               {/* Overlay for album title and photo count */}
               <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-4">
@@ -144,14 +147,14 @@ const MemoriesSection = () => {
                 className="rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
               >
                 <Image
-  src={src} // Image source URL
-  alt={`Memory ${i + 1}`}
-  // Tailwind CSS classes for image styling
-  className="w-full h-full max-h-[400px] object-cover object-center rounded-lg transition-transform duration-300 group-hover:scale-125"
-  loading="lazy" // Optimize image loading
-  width={500} // **REQUIRED: Specify the width of the image**
-  height={300} // **REQUIRED: Specify the height of the image**
-/>
+                  alt={`Memory ${i + 1}`}
+                  // Tailwind CSS classes for image styling
+                  className="w-full h-full max-h-[400px] object-cover object-center rounded-lg transition-transform duration-300 group-hover:scale-125"
+                  loading="lazy" // Optimize image loading
+                  src={src} // Image source URL
+                  width={500} // **REQUIRED: Specify the width of the image**
+                  height={300} // **REQUIRED: Specify the height of the image**
+                />
               </div>
             ))}
           </div>
